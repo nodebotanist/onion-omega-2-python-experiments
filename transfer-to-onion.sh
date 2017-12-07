@@ -1,1 +1,1 @@
-rsync -a -v ./ root@Omega-****.local:~/code
+rsync -a -v ./code root@Omega-****.local:~/code
