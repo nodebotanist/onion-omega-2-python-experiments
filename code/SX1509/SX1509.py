@@ -15,36 +15,31 @@ class SX1509:
     self.i2c.writeByte(self.address, 0x7D, 0x34)
   def setPinDirection(self, pin, direction):
     register = 0x0E
-    bitmask = 0x0000
-    bitmask |= (1 << pin)
     currentPinState = self.i2c.readBytes(self.address, 0x0E, 2)
-    newPinState = [0x00, 0x00]
+    bitOn = True
     if direction == 'output':
-      bitmask = ~(bitmask)
-      bitmaskHighByte = bitmask >> 8
-      newPinState[0] = bitmaskHighByte & currentPinState[0]
-      newPinState[1] = currentPinState[1] & bitmask
-    else:
-      bitmaskHighByte = bitmask >> 8
-      newPinState[0] = bitmaskHighByte | currentPinState[0]
-      newPinState[1] = currentPinState[1] | bitmask
-    print(currentPinState)
-    print('\n')
-    print(newPinState)
-    self.i2c.writeBytes(self.address, 0x0E, newPinState)
+      bitOn = False
+    newPinState = self.useBitMask(currentPinState, pin, bitOn)
+    self.i2c.writeBytes(self.address, register, newPinState)
   def setDigitalPinValue(self, pin, value):
     register = 0x10
-    bitmask = 0x0000
-    bitmask |= 1 << pin
     currentPinState = self.i2c.readBytes(self.address, register, 2)
-    newPinState = [0x00, 0x00]
-    if value == 1:
-      bitmaskHighByte = bitmask >> 8
-      newPinState[0] = bitmaskHighByte | currentPinState[0]
-      newPinState[1] = currentPinState[1] | bitmask
-    else:
-      bitmask = ~(bitmask)
-      bitmaskHighByte = bitmask >> 8
-      newPinState[0] = bitmaskHighByte & currentPinState[0]
-      newPinState[1] = currentPinState[1] & bitmask
+    bitOn = True
+    if not bitOn == 1:
+      bitOn = False
+    newPinState = self.useBitMask(currentPinState, pin, bitOn)
     self.i2c.writeBytes(self.address, register, newPinState)
+  def useBitMask(self, currentState, bit, bitOn):
+    mask = [0x00, 0x00]
+    maskBase = 0x0000
+    maskBase |= (1 << bit)
+    if not bitOn:
+      maskBase = ~maskBase
+    highByte = maskBase >> 8
+    if bitOn:
+      mask[0] = currentState[0] | highByte
+      mask[1] = currentState[1] | maskBase
+    else:
+      mask[0] = currentState[0] & highByte
+      mask[1] = currentState[1] & maskBase
+    return mask
