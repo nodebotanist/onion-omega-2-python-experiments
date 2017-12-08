@@ -32,3 +32,19 @@ class SX1509:
     print('\n')
     print(newPinState)
     self.i2c.writeBytes(self.address, 0x0E, newPinState)
+  def setDigitalPinValue(self, pin, value):
+    register = 0x10
+    bitmask = 0x0000
+    bitmask |= 1 << pin
+    currentPinState = self.i2c.readBytes(self.address, register, 2)
+    newPinState = [0x00, 0x00]
+    if value == 1:
+      bitmaskHighByte = bitmask >> 8
+      newPinState[0] = bitmaskHighByte | currentPinState[0]
+      newPinState[1] = currentPinState[1] | bitmask
+    else:
+      bitmask = ~(bitmask)
+      bitmaskHighByte = bitmask >> 8
+      newPinState[0] = bitmaskHighByte & currentPinState[0]
+      newPinState[1] = currentPinState[1] & bitmask
+    self.i2c.writeBytes(self.address, register, newPinState)
