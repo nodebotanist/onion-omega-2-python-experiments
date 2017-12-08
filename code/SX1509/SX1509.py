@@ -1,34 +1,45 @@
 from OmegaExpansion import onionI2C
 
 class SX1509:
+
+  REGISTERS = {
+    'CHECK': 0x13,
+    'RESET': 0x7D,
+    'PIN_DIRECTION': 0x0E,
+    'PIN_DATA': 0x10
+  }
+
   def __init__(self, address):
     self.address = address
     self.i2c = onionI2C.OnionI2C()
     self.i2c.setVerbosity(1)
+
   def start(self):
-    registerCheck = self.i2c.readBytes(self.address, 0x13, 2)
+    registerCheck = self.i2c.readBytes(self.address, self.REGISTERS['CHECK'], 2)
     if not registerCheck == [255, 0]:
       print('SX1509 Not Found')
     self.softReset()
+
   def softReset(self):
-    self.i2c.writeByte(self.address, 0x7D, 0x12)
-    self.i2c.writeByte(self.address, 0x7D, 0x34)
+    self.i2c.writeByte(self.address, self.REGISTERS['RESET'], 0x12)
+    self.i2c.writeByte(self.address, self.REGISTERS['RESET'], 0x34)
+  
   def setPinDirection(self, pin, direction):
-    register = 0x0E
-    currentPinState = self.i2c.readBytes(self.address, 0x0E, 2)
+    currentPinState = self.i2c.readBytes(self.address, self.REGISTERS['PIN_DIRECTION'], 2)
     bitOn = True
     if direction == 'output':
       bitOn = False
     newPinState = self.useBitMask(currentPinState, pin, bitOn)
-    self.i2c.writeBytes(self.address, register, newPinState)
+    self.i2c.writeBytes(self.address, self.REGISTERS['PIN_DIRECTION'], newPinState)
+
   def setDigitalPinValue(self, pin, value):
-    register = 0x10
-    currentPinState = self.i2c.readBytes(self.address, register, 2)
+    currentPinState = self.i2c.readBytes(self.address, self.REGISTERS['PIN_DATA'], 2)
     bitOn = True
     if not bitOn == 1:
       bitOn = False
     newPinState = self.useBitMask(currentPinState, pin, bitOn)
-    self.i2c.writeBytes(self.address, register, newPinState)
+    self.i2c.writeBytes(self.address, self.REGISTERS['PIN_DATA'], newPinState)
+
   def useBitMask(self, currentState, bit, bitOn):
     mask = [0x00, 0x00]
     maskBase = 0x0000
