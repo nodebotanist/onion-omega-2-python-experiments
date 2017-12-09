@@ -6,7 +6,9 @@ class SX1509:
     'CHECK': 0x13,
     'RESET': 0x7D,
     'PIN_DIRECTION': 0x0E,
-    'PIN_DATA': 0x10
+    'PIN_DATA': 0x10,
+    'CLOCK': 0x1E,
+    'MISC': 0x1F
   }
 
   def __init__(self, address):
@@ -24,6 +26,18 @@ class SX1509:
     self.i2c.writeByte(self.address, self.REGISTERS['RESET'], 0x12)
     self.i2c.writeByte(self.address, self.REGISTERS['RESET'], 0x34)
   
+  def startInternalClock(self): 
+    clockStatus = self.i2c.i2cReadBytes(self.address, self.REGISTERS['CLOCK'], 1)
+    miscStatus = self.i2c.i2cReadBytes(self.address, self.REGISTERS['MISC'], 1)
+    clockStatus = self.useBitMask(clockStatus, 7, True)
+    clockStatus = self.useBitMask(clockStatus, 6, False)
+    clockStatus = self.useBitMask(clockStatus, 5, False)
+    miscStatus = self.useBitMask(miscStatus, 6, False)
+    miscStatus = self.useBitMask(miscStatus, 5, False)
+    miscStatus = self.useBitMask(miscStatus, 4, True)
+    self.i2c.i2cWrite(self.address, self.REGISTERS['MISC'], miscStatus)
+    self.i2c.i2cWrite(self.address, self.REGISTERS['CLOCK'], clockStatus)
+
   def setPinDirection(self, pin, direction):
     currentPinState = self.i2c.readBytes(self.address, self.REGISTERS['PIN_DIRECTION'], 2)
     bitOn = True
@@ -54,3 +68,4 @@ class SX1509:
       mask[0] = currentState[0] & highByte
       mask[1] = currentState[1] & maskBase
     return mask
+
