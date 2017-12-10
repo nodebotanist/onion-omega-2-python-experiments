@@ -8,7 +8,8 @@ class SX1509:
     'PIN_DIRECTION': 0x0E,
     'PIN_DATA': 0x10,
     'CLOCK': 0x1E,
-    'MISC': 0x1F
+    'MISC': 0x1F,
+    'DISABLE_INPUT_BUFFER': 0x00
   }
 
   def __init__(self, address):
@@ -35,8 +36,13 @@ class SX1509:
     miscStatus = self.useBitMask(miscStatus, 6, False)
     miscStatus = self.useBitMask(miscStatus, 5, False)
     miscStatus = self.useBitMask(miscStatus, 4, True)
-    self.i2c.i2cWrite(self.address, self.REGISTERS['MISC'], miscStatus)
-    self.i2c.i2cWrite(self.address, self.REGISTERS['CLOCK'], clockStatus)
+    self.i2c.writeByte(self.address, self.REGISTERS['MISC'], miscStatus)
+    self.i2c.writeByte(self.address, self.REGISTERS['CLOCK'], clockStatus)
+
+  def setDisableInputBuffer(self, pin, disableInputBuffer):
+    disableInputBufferStatus = self.i2c.readBytes(self.address, self.REGISTERS['DISABLE_INPUT_BUFFER'], 2)
+    disableInputBufferStatus = self.useBitMask(disableInputBufferStatus, pin, disableInputBuffer)
+    self.i2c.writeBytes(self.address, self.REGISTERS['DISABLE_INPUT_BUFFER'], disableInputBufferStatus)
 
   def setPinDirection(self, pin, direction):
     currentPinState = self.i2c.readBytes(self.address, self.REGISTERS['PIN_DIRECTION'], 2)
