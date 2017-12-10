@@ -11,7 +11,8 @@ class SX1509:
     'MISC': 0x1F,
     'DISABLE_INPUT_BUFFER': 0x00,
     'PULLUP_RESISTOR': 0x06,
-    'LED_DRIVER': 0x20
+    'LED_DRIVER': 0x20,
+    'PWM_INTENSITY': [0x2A, 0x2D, 0x30, 0x33, 0x36, 0x3B, 0x40, 0x45, 0x4A, 0x4D, 0x50, 0x53, 0x56, 0x5B, 0x60, 0x65]
   }
 
   def __init__(self, address):
@@ -66,10 +67,14 @@ class SX1509:
     newPinState = self.useBitMask(currentPinState, pin, bitOn)
     self.i2c.writeBytes(self.address, self.REGISTERS['PIN_DATA'], newPinState)
 
-  def enableLedDriver(self, pin, LEDDriverOn):
+  def enableLEDDriver(self, pin, LEDDriverOn):
     ledDriverState = self.i2c.readBytes(self.address, self.REGISTERS['LED_DRIVER'], 2)
     ledDriverState = self.useBitMask(ledDriverState, pin, LEDDriverOn)
     self.i2cWriteBytes(self.address, self.REGISTERS['LED_DRIVER'], ledDriverState)
+
+  def setPWMPinValue(self, pin, value):
+    byteValue = 0xFF & value
+    self.i2c.writeByte(self.address, self.REGISTERS['PWM_INTENSITY'][pin], byteValue)
 
   def useBitMask(self, currentState, bit, bitOn):
     mask = [0x00, 0x00]
