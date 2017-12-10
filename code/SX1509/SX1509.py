@@ -9,7 +9,8 @@ class SX1509:
     'PIN_DATA': 0x10,
     'CLOCK': 0x1E,
     'MISC': 0x1F,
-    'DISABLE_INPUT_BUFFER': 0x00
+    'DISABLE_INPUT_BUFFER': 0x00,
+    'PULLUP_RESISTOR': 0x06
   }
 
   def __init__(self, address):
@@ -43,6 +44,10 @@ class SX1509:
     disableInputBufferStatus = self.i2c.readBytes(self.address, self.REGISTERS['DISABLE_INPUT_BUFFER'], 2)
     disableInputBufferStatus = self.useBitMask(disableInputBufferStatus, pin, disableInputBuffer)
     self.i2c.writeBytes(self.address, self.REGISTERS['DISABLE_INPUT_BUFFER'], disableInputBufferStatus)
+  
+  def setPullupResistor(self, pin, pullupResistorOn):
+    pullupResistorStatus = self.i2c.readBytes(self.adress, self.REGISTERS['PULLUP_RESISTORS'], 2)
+    pullupResistorStatus = self.useBitMask(pullupResistorStatus, pin, pullupResistorOn)
 
   def setPinDirection(self, pin, direction):
     currentPinState = self.i2c.readBytes(self.address, self.REGISTERS['PIN_DIRECTION'], 2)
