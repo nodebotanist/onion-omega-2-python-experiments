@@ -10,7 +10,8 @@ class SX1509:
     'CLOCK': 0x1E,
     'MISC': 0x1F,
     'DISABLE_INPUT_BUFFER': 0x00,
-    'PULLUP_RESISTOR': 0x06
+    'PULLUP_RESISTOR': 0x06,
+    'LED_DRIVER': 0x20
   }
 
   def __init__(self, address):
@@ -64,6 +65,11 @@ class SX1509:
       bitOn = False
     newPinState = self.useBitMask(currentPinState, pin, bitOn)
     self.i2c.writeBytes(self.address, self.REGISTERS['PIN_DATA'], newPinState)
+
+  def enableLedDriver(self, pin, LEDDriverOn):
+    ledDriverState = self.i2c.readBytes(self.address, self.REGISTERS['LED_DRIVER'], 2)
+    ledDriverState = self.useBitMask(ledDriverState, pin, LEDDriverOn)
+    self.i2cWriteBytes(self.address, self.REGISTERS['LED_DRIVER'], ledDriverState)
 
   def useBitMask(self, currentState, bit, bitOn):
     mask = [0x00, 0x00]

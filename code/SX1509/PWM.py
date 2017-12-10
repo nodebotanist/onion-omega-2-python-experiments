@@ -14,4 +14,7 @@ expander.setPullupResistor(7, False)
 expander.setPinDirection(5, 'output')
 expander.setPinDirection(6, 'output')
 expander.setPinDirection(7, 'output')
+expander.enableLEDDriver(5, True)
+expander.enableLEDDriver(6, True)
+expander.enableLEDDriver(7, True)
 
