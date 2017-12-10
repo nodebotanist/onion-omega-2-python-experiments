@@ -11,4 +11,7 @@ expander.setDisableInputBuffer(7, True)
 expander.setPullupResistor(5, False)
 expander.setPullupResistor(6, False)
 expander.setPullupResistor(7, False)
+expander.setPinDirection(5, 'output')
+expander.setPinDirection(6, 'output')
+expander.setPinDirection(7, 'output')
 
