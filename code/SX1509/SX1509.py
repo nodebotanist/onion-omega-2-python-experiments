@@ -10,7 +10,7 @@ class SX1509:
     'CLOCK': 0x1E,
     'MISC': 0x1F,
     'DISABLE_INPUT_BUFFER': 0x00,
-    'PULLUP_RESISTOR': 0x06,
+    'PULLUP_RESISTORS': 0x06,
     'LED_DRIVER': 0x20,
     'PWM_INTENSITY': [0x2A, 0x2D, 0x30, 0x33, 0x36, 0x3B, 0x40, 0x45, 0x4A, 0x4D, 0x50, 0x53, 0x56, 0x5B, 0x60, 0x65]
   }
@@ -31,16 +31,17 @@ class SX1509:
     self.i2c.writeByte(self.address, self.REGISTERS['RESET'], 0x34)
   
   def startInternalClock(self): 
-    clockStatus = self.i2c.i2cReadBytes(self.address, self.REGISTERS['CLOCK'], 1)
-    miscStatus = self.i2c.i2cReadBytes(self.address, self.REGISTERS['MISC'], 1)
-    clockStatus = self.useBitMask(clockStatus, 7, True)
-    clockStatus = self.useBitMask(clockStatus, 6, False)
+    clockStatus = self.i2c.readBytes(self.address, self.REGISTERS['CLOCK'], 1)
+    clockStatus = [0x00, clockStatus[0]]
+    miscStatus = self.i2c.readBytes(self.address, self.REGISTERS['MISC'], 1)
+    miscStatus = [0x00, miscStatus[0]]
     clockStatus = self.useBitMask(clockStatus, 5, False)
+    clockStatus = self.useBitMask(clockStatus, 6, True)
     miscStatus = self.useBitMask(miscStatus, 6, False)
     miscStatus = self.useBitMask(miscStatus, 5, False)
     miscStatus = self.useBitMask(miscStatus, 4, True)
-    self.i2c.writeByte(self.address, self.REGISTERS['MISC'], miscStatus)
-    self.i2c.writeByte(self.address, self.REGISTERS['CLOCK'], clockStatus)
+    self.i2c.writeByte(self.address, self.REGISTERS['MISC'], miscStatus[1])
+    self.i2c.writeByte(self.address, self.REGISTERS['CLOCK'], clockStatus[1])
 
   def setDisableInputBuffer(self, pin, disableInputBuffer):
     disableInputBufferStatus = self.i2c.readBytes(self.address, self.REGISTERS['DISABLE_INPUT_BUFFER'], 2)
@@ -48,7 +49,7 @@ class SX1509:
     self.i2c.writeBytes(self.address, self.REGISTERS['DISABLE_INPUT_BUFFER'], disableInputBufferStatus)
   
   def setPullupResistor(self, pin, pullupResistorOn):
-    pullupResistorStatus = self.i2c.readBytes(self.adress, self.REGISTERS['PULLUP_RESISTORS'], 2)
+    pullupResistorStatus = self.i2c.readBytes(self.address, self.REGISTERS['PULLUP_RESISTORS'], 2)
     pullupResistorStatus = self.useBitMask(pullupResistorStatus, pin, pullupResistorOn)
 
   def setPinDirection(self, pin, direction):
@@ -70,7 +71,7 @@ class SX1509:
   def enableLEDDriver(self, pin, LEDDriverOn):
     ledDriverState = self.i2c.readBytes(self.address, self.REGISTERS['LED_DRIVER'], 2)
     ledDriverState = self.useBitMask(ledDriverState, pin, LEDDriverOn)
-    self.i2cWriteBytes(self.address, self.REGISTERS['LED_DRIVER'], ledDriverState)
+    self.i2c.writeBytes(self.address, self.REGISTERS['LED_DRIVER'], ledDriverState)
 
   def setPWMPinValue(self, pin, value):
     byteValue = 0xFF & value
